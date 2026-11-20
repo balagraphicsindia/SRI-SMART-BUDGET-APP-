@@ -1,0 +1,200 @@
+<!DOCTYPE html><html lang="ta"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Smart Budget · ஸ்மார்ட் பட்ஜெட்</title>
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#0b6e5c">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="icon-192.png"><link rel="icon" href="icon.svg">
+<script>try{var _s=JSON.parse(localStorage.getItem("sbem_v1")||"{}");document.documentElement.dataset.theme=_s.theme||(matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light")}catch(e){}</script>
+<style>
+:root{color-scheme:light;--bg:#f3f5f4;--card:#fff;--ink:#14231f;--muted:#5d6e68;--line:#dbe3e0;--brand:#0b6e5c;--brand2:#e8a317;--bad:#c0392b;--good:#1e8e5a;--r:14px}
+:root[data-theme=dark]{color-scheme:dark;--bg:#0e1614;--card:#16211e;--ink:#e8f0ed;--muted:#93a7a0;--line:#26352f;--brand:#15806b;--brand2:#f0b43a;--bad:#ef6a5b;--good:#4cc98a}
+header .btn.sm{background:rgba(255,255,255,.22)}input[type=month],input[type=date]{min-height:44px}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,"Noto Sans Tamil","Nirmala UI",sans-serif;padding-bottom:env(safe-area-inset-bottom)}
+header{position:sticky;top:0;z-index:5;background:var(--brand);color:#fff;display:flex;gap:8px;align-items:center;justify-content:space-between;padding:10px 14px;padding-top:calc(10px + env(safe-area-inset-top))}
+header h1{font-size:1.05rem;margin:0;font-weight:700}
+.btn{border:0;border-radius:10px;padding:10px 14px;font:inherit;font-weight:600;cursor:pointer;background:var(--brand);color:#fff}
+.btn.alt{background:transparent;color:var(--ink);border:1px solid var(--line)}.btn.sm{padding:6px 10px;font-size:.85rem}
+.btn.lang{background:var(--brand2);color:#2a1d00;font-size:1rem;padding:8px 16px;border-radius:99px}
+.btn.bad{background:transparent;color:var(--bad);border:1px solid var(--line)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--brand2);outline-offset:2px}
+main{max-width:980px;margin:0 auto;padding:14px;display:grid;gap:14px}
+.ad{border:1px dashed var(--line);border-radius:var(--r);min-height:70px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:.85rem;background:var(--card)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+h2{font-size:1.05rem;margin:0 0 12px}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.sum{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.sum .card span{color:var(--muted);font-size:.9rem}.sum b{display:block;font-size:1.6rem}
+.inc b{color:var(--good)}.exp b{color:var(--bad)}
+.prog{height:14px;background:var(--line);border-radius:99px;overflow:hidden;margin:8px 0}
+.prog i{display:block;height:100%;width:0;background:var(--good);transition:width .4s}.prog.red i{background:var(--bad)}
+.msg{font-size:.9rem;font-weight:600}.msg.red{color:var(--bad)}
+label{display:block;font-size:.85rem;color:var(--muted);margin-bottom:4px}
+input[type=month],input[type=date]{min-height:44px;appearance:auto}input::-webkit-calendar-picker-indicator{opacity:1;cursor:pointer}:root[data-theme=dark] input[type=month],:root[data-theme=dark] input[type=date]{color-scheme:dark;color:var(--ink);background-color:var(--bg)}:root[data-theme=light] input[type=month],:root[data-theme=light] input[type=date]{color-scheme:light}
+input,select{width:100%;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink);font:inherit}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;align-items:end}
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{flex:1;border:0;padding:10px;font:inherit;font-weight:600;background:var(--bg);color:var(--ink);cursor:pointer}
+.seg button.on[data-t=income]{background:var(--good);color:#fff}.seg button.on[data-t=expense]{background:var(--bad);color:#fff}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:14px}
+canvas{width:100%;height:240px;display:block}
+.lg{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.82rem;margin-top:8px}.lg i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px}
+.row{display:flex;justify-content:space-between;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.row small{color:var(--muted)}.amt{font-weight:700;white-space:nowrap}.amt.income{color:var(--good)}.amt.expense{color:var(--bad)}
+.acts{display:flex;gap:6px;margin-top:6px}
+dialog{border:0;border-radius:var(--r);padding:20px;max-width:380px;width:92%;background:var(--card);color:var(--ink)}dialog::backdrop{background:#0008}
+.hide{display:none!important}
+</style></head><body>
+<header><h1 data-i="title"></h1>
+<div class="tools"><button class="btn sm" id="th" aria-label="Theme">◐</button><button class="btn sm hide" id="inst" data-i="install"></button><button class="btn lang" id="lang" aria-label="Language">தமிழ் / English</button></div></header>
+<main>
+<div class="ad" id="adTop"><!-- Paste Adsterra / AdSense code here --><span data-i="ad"></span> · 728×90 / 320×50</div>
+
+<section class="sum">
+<div class="card inc"><span data-i="income"></span><b id="vI">₹0</b></div>
+<div class="card exp"><span data-i="expense"></span><b id="vE">₹0</b></div>
+<div class="card"><span data-i="balance"></span><b id="vB">₹0</b></div>
+</section>
+
+<section class="card">
+<div class="grid"><div><label for="per" data-i="period"></label><select id="per"></select></div>
+<div id="wM" class="hide"><label for="month" data-i="month"></label><input type="month" id="month"></div>
+<div id="wC" class="hide"><label for="from" data-i="from"></label><input type="date" id="from"></div>
+<div id="wC2" class="hide"><label for="to" data-i="to"></label><input type="date" id="to"></div>
+<div><label for="budget" data-i="budget"></label><input type="number" id="budget" min="0" inputmode="decimal"></div></div>
+<div class="prog" id="prog"><i></i></div><div class="msg" id="pmsg"></div><div class="msg" id="prange" style="color:var(--muted);font-weight:400"></div>
+</section>
+
+<section class="card"><h2 id="fT" data-i="addTx"></h2>
+<div class="seg" id="seg" style="margin-bottom:12px"><button type="button" data-t="expense" class="on" data-i="expT"></button><button type="button" data-t="income" data-i="incT"></button></div>
+<div class="grid">
+<div><label for="amt" data-i="amount"></label><input id="amt" type="number" min="0" step="0.01" inputmode="decimal"></div>
+<div><label for="cat" data-i="category"></label><select id="cat"></select></div>
+<div><label for="dt" data-i="date"></label><input id="dt" type="date"></div>
+<div><label for="note" data-i="note"></label><input id="note" maxlength="120"></div>
+<div class="tools"><button class="btn" id="save"></button><button class="btn alt hide" id="cancel" data-i="cancel"></button></div>
+</div></section>
+
+<section class="charts">
+<div class="card"><h2 data-i="pie"></h2><canvas id="pie"></canvas><div class="lg" id="pieLg"></div></div>
+<div class="card"><h2 data-i="bar"></h2><canvas id="bar"></canvas><div class="lg" id="barLg"></div></div>
+</section>
+
+<section class="card"><h2 data-i="history"></h2>
+<div class="grid"><input id="q" type="search" data-p="search"><select id="fc"></select></div>
+<div id="list"></div></section>
+
+<section class="card tools"><button class="btn" id="csv" data-i="csv"></button><button class="btn" id="pdf" data-i="pdf"></button>
+<button class="btn alt" id="pro" data-i="upgrade" style="margin-left:auto"></button></section>
+
+<div class="ad" id="adBot"><!-- Paste Adsterra / AdSense code here --><span data-i="ad"></span> · 728×90 / 320×50</div>
+</main>
+
+<dialog id="dlg"><h2 data-i="proT"></h2><p data-i="proP"></p>
+<p><a class="btn" id="payA" target="_blank" rel="noopener" data-i="pay" style="display:inline-block;text-decoration:none"></a></p>
+<label for="code" data-i="code"></label><input id="code"><p id="cErr" class="msg red"></p>
+<div class="tools"><button class="btn" id="unl" data-i="unlock"></button><button class="btn alt" id="x" data-i="close"></button></div></dialog>
+
+<dialog id="cdlg"><p id="cm" class="msg"></p><div class="tools"><button class="btn bad" id="cy" data-i="del"></button><button class="btn alt" id="cn" data-i="cancel"></button></div></dialog>
+<script>
+// ===== CONFIG: edit these =====
+const PAYMENT_URL="https://rzp.io/l/your-payment-link", PRO_CODE="PRO2026";
+// ==============================
+const CATS=[["food","Food","உணவு","e"],["rent","Rent","வாடகை","e"],["travel","Travel","பயணம்","e"],["bills","Utilities / Bills","மின்சாரம் & பில்கள்","e"],["biz","Business Supplies","வணிகச் செலவுகள்","e"],["sales","Salary / Sales","சம்பளம் / விற்பனை","i"],["other","Other","மற்றவை","b"]];
+const COL={food:"#f97316",rent:"#6366f1",travel:"#06b6d4",bills:"#eab308",biz:"#ec4899",sales:"#22c55e",other:"#94a3b8"};
+const L={en:{title:"Smart Budget & Expense Manager",income:"Total Income",expense:"Total Expenses",balance:"Remaining Balance",budget:"Monthly Budget Limit (₹)",addTx:"Add Transaction",editTx:"Edit Transaction",incT:"Income",expT:"Expense",amount:"Amount (₹)",category:"Category",date:"Date",note:"Note",save:"Save",update:"Update",cancel:"Cancel",month:"Month",all:"All months",search:"Search notes or category…",allCats:"All categories",history:"Transaction History",empty:"No transactions yet. Add your first one above.",edit:"Edit",del:"Delete",confirmDel:"Delete this transaction?",pie:"Spending by Category",bar:"Monthly Income vs Expenses",noData:"No data",csv:"Export CSV / Excel",pdf:"Download PDF Report",upgrade:"Upgrade to Pro (Remove Ads)",ad:"Ad space",proT:"Go Pro",proP:"Pay once, then enter your access code to remove all ads.",pay:"Open payment link",code:"Access code",unlock:"Unlock",invalid:"Invalid code. Check it and try again.",close:"Close",warn:"Over 80% of your budget used!",ok:"Within budget",used:"used",report:"Budget Report",install:"Install app",type:"Type",period:"Review period",pThis:"This month",pMonth:"Specific month",p3:"Last 3 months",p6:"Last 6 months",p12:"Last 12 months",pCustom:"Custom period",pAll:"All time",from:"From",to:"To",total:"Total"},
+ta:{title:"ஸ்மார்ட் பட்ஜெட் & செலவு மேலாளர்",income:"மொத்த வருமானம்",expense:"மொத்த செலவு",balance:"மீதமுள்ள தொகை",budget:"மாதாந்திர பட்ஜெட் வரம்பு (₹)",addTx:"பரிவர்த்தனை சேர்",editTx:"பரிவர்த்தனை திருத்து",incT:"வரவு",expT:"செலவு",amount:"தொகை (₹)",category:"வகை",date:"தேதி",note:"குறிப்பு",save:"சேமி",update:"புதுப்பி",cancel:"ரத்து",month:"மாதம்",all:"எல்லா மாதங்களும்",search:"குறிப்பு அல்லது வகை தேடு…",allCats:"அனைத்து வகைகள்",history:"பரிவர்த்தனை வரலாறு",empty:"பதிவுகள் இல்லை. மேலே முதல் பதிவைச் சேர்க்கவும்.",edit:"திருத்து",del:"நீக்கு",confirmDel:"இந்தப் பதிவை நீக்கவா?",pie:"வகைவாரி செலவு",bar:"மாதாந்திர வரவு vs செலவு",noData:"தரவு இல்லை",csv:"CSV / Excel ஏற்றுமதி",pdf:"PDF அறிக்கை பதிவிறக்கு",upgrade:"Pro-வுக்கு மேம்படுத்து (விளம்பரம் நீக்கு)",ad:"விளம்பர இடம்",proT:"Pro பதிப்பு",proP:"ஒருமுறை பணம் செலுத்தி, அணுகல் குறியீட்டை உள்ளிட்டால் விளம்பரங்கள் நீக்கப்படும்.",pay:"கட்டண இணைப்பைத் திற",code:"அணுகல் குறியீடு",unlock:"திற",invalid:"தவறான குறியீடு. சரிபார்த்து மீண்டும் முயலவும்.",close:"மூடு",warn:"பட்ஜெட்டில் 80%-ஐத் தாண்டிவிட்டது!",ok:"பட்ஜெட் கட்டுப்பாட்டில் உள்ளது",used:"பயன்பாடு",report:"பட்ஜெட் அறிக்கை",install:"நிறுவு",type:"வகை",period:"பார்வைக் காலம்",pThis:"இந்த மாதம்",pMonth:"குறிப்பிட்ட மாதம்",p3:"கடந்த 3 மாதங்கள்",p6:"கடந்த 6 மாதங்கள்",p12:"கடந்த 12 மாதங்கள்",pCustom:"விருப்பக் காலம்",pAll:"எல்லா காலமும்",from:"தொடக்கம்",to:"முடிவு",total:"மொத்தம்"}};
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+let S={tx:[],budget:10000,lang:"ta",pro:false,per:"thisMonth",theme:null};
+try{Object.assign(S,JSON.parse(localStorage.getItem("sbem_v1")||"{}"))}catch(e){}
+const persist=()=>{try{localStorage.setItem("sbem_v1",JSON.stringify(S))}catch(e){}};
+const t=k=>L[S.lang][k], cn=c=>CATS.find(x=>x[0]===c)[S.lang==="ta"?2:1];
+const inr=n=>"₹"+new Intl.NumberFormat("en-IN",{maximumFractionDigits:2}).format(n);
+const pad=n=>String(n).padStart(2,"0"), ym=d=>d.getFullYear()+"-"+pad(d.getMonth()+1), today=()=>{const d=new Date();return ym(d)+"-"+pad(d.getDate())};
+let ftype="expense", editId=null;
+$("#month").value=ym(new Date());$("#from").value=ym(new Date())+"-01";$("#to").value=today();$("#dt").value=today(); $("#budget").value=S.budget;
+
+function catOpts(sel,type,withAll){const o=CATS.filter(c=>!type||c[3]==="b"||c[3]===(type==="income"?"i":"e"));
+ sel.innerHTML=(withAll?`<option value="">${t("allCats")}</option>`:"")+o.map(c=>`<option value="${c[0]}">${c[S.lang==="ta"?2:1]}</option>`).join("")}
+function applyLang(){document.documentElement.lang=S.lang;
+ $$("[data-i]").forEach(e=>e.textContent=t(e.dataset.i));$$("[data-p]").forEach(e=>e.placeholder=t(e.dataset.p));
+ perOpts();const c=$("#cat").value,f=$("#fc").value;catOpts($("#cat"),ftype);catOpts($("#fc"),null,true);
+ if(c)$("#cat").value=c;$("#fc").value=f;
+ $("#save").textContent=editId?t("update"):t("save");$("#fT").textContent=editId?t("editTx"):t("addTx");render()}
+function perOpts(){const v=$("#per").value||S.per||"thisMonth";$("#per").innerHTML=[["thisMonth","pThis"],["month","pMonth"],["3m","p3"],["6m","p6"],["12m","p12"],["custom","pCustom"],["all","pAll"]].map(a=>`<option value="${a[0]}">${t(a[1])}</option>`).join("");$("#per").value=v;showPer()}
+function showPer(){const v=$("#per").value;$("#wM").classList.toggle("hide",v!=="month");$("#wC").classList.toggle("hide",v!=="custom");$("#wC2").classList.toggle("hide",v!=="custom")}
+const fd=x=>new Date(x+"T00:00").toLocaleDateString(S.lang==="ta"?"ta-IN":"en-IN",{day:"numeric",month:"short",year:"numeric"});
+function range(){const v=$("#per").value,n=new Date(),Y=n.getFullYear(),M0=n.getMonth();
+ const first=(y,m)=>y+"-"+pad(m+1)+"-01",last=(y,m)=>{const d=new Date(y,m+1,0);return ym(d)+"-"+pad(d.getDate())};
+ if(v==="month"){const m=$("#month").value||ym(n),y=+m.slice(0,4),mo=+m.slice(5)-1;return[first(y,mo),last(y,mo),1]}
+ if(v==="3m"||v==="6m"||v==="12m"){const k=parseInt(v),d=new Date(Y,M0-k+1,1);return[first(d.getFullYear(),d.getMonth()),last(Y,M0),k]}
+ if(v==="custom"){let a=$("#from").value||first(Y,M0),b=$("#to").value||today();if(a>b)[a,b]=[b,a];return[a,b,Math.max(1,(+b.slice(0,4)-+a.slice(0,4))*12+(+b.slice(5,7))-(+a.slice(5,7))+1)]}
+ if(v==="all"){const a=S.tx.map(x=>x.date).sort()[0]||today();return[null,null,Math.max(1,(Y-+a.slice(0,4))*12+M0+2-(+a.slice(5,7)))]}
+ return[first(Y,M0),last(Y,M0),1]}
+function period(){const[s,e]=range();return S.tx.filter(x=>(!s||x.date>=s)&&(!e||x.date<=e))}
+function rText(){const[s,e]=range();return s?fd(s)+" – "+fd(e):t("pAll")}
+function render(){const p=period(),I=p.filter(x=>x.type==="income").reduce((a,x)=>a+x.amt,0),E=p.filter(x=>x.type==="expense").reduce((a,x)=>a+x.amt,0);
+ $("#vI").textContent=inr(I);$("#vE").textContent=inr(E);$("#vB").textContent=inr(I-E);
+ const[rs,re,mc]=range(),PB=S.budget*mc,pct=PB>0?E/PB*100:0,red=pct>80;$("#prog").classList.toggle("red",red);$("#prog i").style.width=Math.min(100,pct)+"%";
+ $("#pmsg").className="msg"+(red?" red":"");$("#pmsg").textContent=`${Math.round(pct)}% ${t("used")} (${inr(E)} / ${inr(PB)}) · ${red?t("warn"):t("ok")}`;$("#prange").textContent=rText();
+ const q=$("#q").value.trim().toLowerCase(),fc=$("#fc").value;
+ const rows=p.filter(x=>(!fc||x.cat===fc)&&(!q||(x.note||"").toLowerCase().includes(q)||CATS.find(c=>c[0]===x.cat).slice(1,3).join(" ").toLowerCase().includes(q))).sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+ const loc=S.lang==="ta"?"ta-IN":"en-IN";
+ $("#list").innerHTML=rows.length?rows.map(x=>`<div class="row"><div><b>${cn(x.cat)}</b> <small>· ${new Date(x.date+"T00:00").toLocaleDateString(loc,{day:"numeric",month:"short",year:"numeric"})}</small><br><small>${esc(x.note||"")}</small>
+ <div class="acts"><button class="btn alt sm" data-e="${x.id}">${t("edit")}</button><button class="btn bad sm" data-d="${x.id}">${t("del")}</button></div></div>
+ <div class="amt ${x.type}">${x.type==="income"?"+":"−"}${inr(x.amt)}</div></div>`).join(""):`<p class="msg" style="color:var(--muted)">${t("empty")}</p>`;
+ charts(p);$$(".ad").forEach(a=>a.classList.toggle("hide",S.pro));$("#pro").classList.toggle("hide",S.pro)}
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function cv(id){const c=$(id),r=devicePixelRatio||1,w=c.clientWidth,h=c.clientHeight;c.width=w*r;c.height=h*r;const g=c.getContext("2d");g.setTransform(r,0,0,r,0,0);g.clearRect(0,0,w,h);g.font="12px system-ui,sans-serif";g.fillStyle=getComputedStyle(document.body).getPropertyValue("--muted");return[g,w,h]}
+function charts(p){
+ let [g,w,h]=cv("#pie");const d={};p.filter(x=>x.type==="expense").forEach(x=>d[x.cat]=(d[x.cat]||0)+x.amt);
+ const ks=Object.keys(d),tot=ks.reduce((a,k)=>a+d[k],0);$("#pieLg").innerHTML="";
+ if(!tot){g.textAlign="center";g.fillText(t("noData"),w/2,h/2)}else{let a=-Math.PI/2;const R=Math.min(w,h)/2-8;
+  ks.forEach(k=>{const s=d[k]/tot*Math.PI*2;g.beginPath();g.moveTo(w/2,h/2);g.arc(w/2,h/2,R,a,a+s);g.closePath();g.fillStyle=COL[k];g.fill();a+=s});
+  g.beginPath();g.arc(w/2,h/2,R*.55,0,7);g.fillStyle=getComputedStyle(document.body).getPropertyValue("--card");g.fill();
+  $("#pieLg").innerHTML=ks.map(k=>`<span><i style="background:${COL[k]}"></i>${cn(k)} ${Math.round(d[k]/tot*100)}%</span>`).join("")}
+ [g,w,h]=cv("#bar");const R=range(),per=$("#per").value,endS=["custom","month","thisMonth"].includes(per)?R[1]:today(),endD=new Date(+endS.slice(0,4),+endS.slice(5,7)-1,1),n=["thisMonth","month"].includes(per)?6:Math.min(12,R[2]),ms=[];
+ for(let i=n-1;i>=0;i--)ms.push(new Date(endD.getFullYear(),endD.getMonth()-i,1));
+ const vals=ms.map(m=>{const k=ym(m),f=ty=>S.tx.filter(x=>x.type===ty&&x.date.startsWith(k)).reduce((a,x)=>a+x.amt,0);return[f("income"),f("expense")]});
+ const mx=Math.max(1,...vals.flat()),bw=(w-20)/ms.length,ch=h-28,loc=S.lang==="ta"?"ta-IN":"en-IN";g.textAlign="center";
+ ms.forEach((m,i)=>{const x=10+i*bw;vals[i].forEach((v,j)=>{const bh=v/mx*(ch-14);g.fillStyle=j?"#c0392b":"#1e8e5a";g.fillRect(x+bw*.12+j*bw*.38,ch-bh,bw*.36,bh)});g.fillStyle=getComputedStyle(document.body).getPropertyValue("--muted");g.fillText((n>6?(m.getMonth()+1)+"/"+String(m.getFullYear()).slice(2):m.toLocaleDateString(loc,{month:"short"})),x+bw/2,h-8)});
+ $("#barLg").innerHTML=`<span><i style="background:#1e8e5a"></i>${t("incT")}</span><span><i style="background:#c0392b"></i>${t("expT")}</span>`}
+
+$("#lang").onclick=()=>{S.lang=S.lang==="ta"?"en":"ta";persist();applyLang()};
+$("#seg").onclick=e=>{const b=e.target.closest("button");if(!b)return;ftype=b.dataset.t;$$("#seg button").forEach(x=>x.classList.toggle("on",x===b));catOpts($("#cat"),ftype)};
+$("#save").onclick=()=>{const amt=parseFloat($("#amt").value);if(!(amt>0)){$("#amt").focus();return}
+ const o={type:ftype,amt,cat:$("#cat").value,date:$("#dt").value||today(),note:$("#note").value.trim()};
+ if(editId){Object.assign(S.tx.find(x=>x.id===editId),o)}else S.tx.push({id:Date.now(),...o});
+ persist();resetForm();render()};
+function resetForm(){editId=null;$("#amt").value="";$("#note").value="";$("#dt").value=today();$("#cancel").classList.add("hide");$("#save").textContent=t("save");$("#fT").textContent=t("addTx")}
+$("#cancel").onclick=resetForm;
+$("#list").onclick=e=>{const b=e.target.closest("button");if(!b)return;
+ if(b.dataset.d){delId=b.dataset.d;$("#cm").textContent=t("confirmDel");$("#cdlg").showModal()}
+ if(b.dataset.e){const x=S.tx.find(y=>y.id==b.dataset.e);editId=x.id;ftype=x.type;$$("#seg button").forEach(s=>s.classList.toggle("on",s.dataset.t===x.type));catOpts($("#cat"),x.type);
+  $("#cat").value=x.cat;$("#amt").value=x.amt;$("#dt").value=x.date;$("#note").value=x.note||"";$("#cancel").classList.remove("hide");$("#save").textContent=t("update");$("#fT").textContent=t("editTx");$("#fT").scrollIntoView({behavior:"smooth"})}};
+["#month","#from","#to","#q","#fc"].forEach(s=>$(s).oninput=render);$("#per").onchange=()=>{S.per=$("#per").value;persist();showPer();render()};
+$("#budget").oninput=e=>{S.budget=parseFloat(e.target.value)||0;persist();render()};
+window.onresize=()=>charts(period());
+
+function dl(name,text,mime){if(window.AndroidBridge){AndroidBridge.saveFile(name,mime,text);return}const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:mime}));a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),999)}
+function totals(p){return[p.filter(x=>x.type==="income").reduce((a,x)=>a+x.amt,0),p.filter(x=>x.type==="expense").reduce((a,x)=>a+x.amt,0)]}
+$("#csv").onclick=()=>{const q=v=>typeof v==="number"?v:'"'+String(v).replace(/"/g,'""')+'"',p=period().sort((a,b)=>a.date.localeCompare(b.date)),[I,E]=totals(p),[s,e]=range();
+ const r=[["Date","Category (EN)","வகை (TA)","Note","Income (INR)","Expense (INR)"],...p.map(x=>{const c=CATS.find(c=>c[0]===x.cat);return[x.date,c[1],c[2],x.note||"",x.type==="income"?x.amt:"",x.type==="expense"?x.amt:""]}),["","","","TOTAL",I,E],["","","","BALANCE",I-E,""]];
+ dl(`budget_${s||"all"}_${e||"all"}.csv`,"\ufeff"+r.map(a=>a.map(q).join(",")).join("\r\n"),"text/csv")};
+$("#pdf").onclick=()=>{const p=period().sort((a,b)=>a.date.localeCompare(b.date)),[I,E]=totals(p);
+ const rows=p.map(x=>`<tr><td>${x.date}</td><td>${cn(x.cat)}</td><td>${esc(x.note||"")}</td><td class="n i">${x.type==="income"?inr(x.amt):""}</td><td class="n e">${x.type==="expense"?inr(x.amt):""}</td></tr>`).join("");
+ const html=`<!DOCTYPE html><html lang="${S.lang}"><meta charset="utf-8"><title>${t("report")}</title><style>body{font:14px/1.4 system-ui,"Noto Sans Tamil","Nirmala UI",sans-serif;padding:24px;color:#111}table{width:100%;border-collapse:collapse}th,td{border-bottom:1px solid #ccc;padding:6px;text-align:left}.n{text-align:right;white-space:nowrap}.i{color:#1e8e5a}.e{color:#c0392b}tfoot td{font-weight:700;border-top:2px solid #111}</style>
+ <h1>${t("report")}</h1><p>${rText()}</p><table><thead><tr><th>${t("date")}</th><th>${t("category")}</th><th>${t("note")}</th><th class="n">${t("incT")}</th><th class="n">${t("expT")}</th></tr></thead><tbody>${rows}</tbody>
+ <tfoot><tr><td colspan="3">${t("total")}</td><td class="n i">${inr(I)}</td><td class="n e">${inr(E)}</td></tr><tr><td colspan="3">${t("balance")}</td><td class="n" colspan="2">${inr(I-E)}</td></tr></tfoot></table></html>`;
+ if(window.AndroidBridge){AndroidBridge.printHtml(html);return}
+ const w=window.open("","_blank");if(!w)return;w.document.write(html);w.document.close();w.focus();setTimeout(()=>w.print(),400)};
+
+$("#pro").onclick=()=>{$("#payA").href=PAYMENT_URL;$("#cErr").textContent="";$("#dlg").showModal()};$("#x").onclick=()=>$("#dlg").close();
+$("#unl").onclick=()=>{if($("#code").value.trim()===PRO_CODE){S.pro=true;persist();$("#dlg").close();render()}else $("#cErr").textContent=t("invalid")};
+
+let dp;addEventListener("beforeinstallprompt",e=>{e.preventDefault();dp=e;$("#inst").classList.remove("hide")});
+$("#inst").onclick=async()=>{if(dp){dp.prompt();dp=null;$("#inst").classList.add("hide")}};
+if("serviceWorker" in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("sw.js").catch(()=>{});
+let delId=null;$("#cy").onclick=()=>{S.tx=S.tx.filter(x=>x.id!=delId);persist();$("#cdlg").close();render()};$("#cn").onclick=()=>$("#cdlg").close();
+$("#th").onclick=()=>{const d=document.documentElement.dataset.theme==="dark"?"light":"dark";document.documentElement.dataset.theme=S.theme=d;persist();render()};
+applyLang();
+</script></body></html>
